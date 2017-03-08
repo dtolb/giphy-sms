@@ -135,15 +135,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, process.env.HOST || "0.0.0.0");
 console.log("Gif bot running on port: ", port);
 
-
-// api.Message.sendGroup({
-// 	to: ['+19197891146', '+14153084916'],
-// 	from: '+18707104430',
-// 	text: 'checkout on giphy: http://gph.is/2lDw0fD',
-// 	media: []
-// })
-// .then(message=>{
-// 	console.log('----Sent Message Body------');
-// 	console.log(message);
-// 	console.log('---------------------------');
-// });
