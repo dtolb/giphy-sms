@@ -1,0 +1,28 @@
+{
+  "name": "giphy_sms",
+  "version": "1.0.0",
+  "description": "Add a giphy bot to a group message thread",
+  "main": "index.js",
+  "scripts": {
+    "test": "'echo no test'"
+  },
+  "keywords": [
+    "bandwidth",
+    "group",
+    "sms",
+    "mms",
+    "giphy",
+    "gif",
+    "groupsms",
+    "bot",
+    "ai"
+  ],
+  "author": "Dan Tolbert",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "debug": "^2.6.1",
+    "express": "^4.15.2",
+    "giphy-api": "^1.2.5"
+  }
+}
