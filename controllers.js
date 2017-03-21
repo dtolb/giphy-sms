@@ -15,7 +15,8 @@ const buildToArray = function (message) {
 }
 
 const isCommandValid = function (command) {
-	return commands.hasOwnProperty(command)
+	// check to see if function as well
+	return commands.hasOwnProperty(command);
 };
 
 const messageReadyForProcessing = function (message) {
@@ -46,28 +47,30 @@ module.exports.checkIfBodyIsArray = function (req, res, next) {
 };
 
 module.exports.handleMessages = function (req, res, next) {
-	req.outMessages = [];
-	req.body.forEach(message=> {
-		debug('Iterating over message');
-		if (messageReadyForProcessing(message)) {
-			message.numbers = buildToArray(message);
-			message.command = extractCommand(message);
-			if (isCommandValid(command.command)) {
-				commands[command](message)
-				.then(function (outMessage) {
-					req.outMessages.push(outMessage);
-				})
-				.catch(function (error) {
-					debug(error);
-					req.outMessages.push(commands.error(message));
-				});
-			}
-			else {
-				req.outMessages.push(commands.default(message));
-			}
+	req.outMessage = [];
+	message = req.body[0];
+	debug('Handling message');
+	if (messageReadyForProcessing(message)) {
+		message.numbers = buildToArray(message);
+		message.command = extractCommand(message);
+		if (isCommandValid(command.command)) {
+			commands[command](message)
+			.then(function (outMessage) {
+				req.outMessages.push(outMessage);
+			})
+			.catch(function (error) {
+				debug(error);
+				req.outMessages.push(commands.error(message));
+			})
+			.finally(function () {
+				next()
+			});
+		}
+		else {
+			req.outMessages.push(commands.default(message));
+			next();
 		}
 	}
-	next();
 };
 
 module.exports.sendMessages = function (req, res, next) {};
