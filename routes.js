@@ -5,9 +5,8 @@ const controllers = require('./controllers.js');
 router.route('/message')
 	.post(
 		controllers.checkIfBodyIsArray,
-		controllers.determineAction,
-		controllers.buildResponse,
-		controllers.sendMessage
+		controllers.handleMessages,
+		controllers.sendMessages
 		);
 
 router.route('/calls')
