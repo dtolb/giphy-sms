@@ -5,7 +5,7 @@ const name = 'giphy_sms';
 debug('booting %s', name);
 
 const express = require('express');
-
+let app = express();
 const maxGifSize = 1500000;
 
 const userId = process.env.CATAPULT_USER_ID;
@@ -37,69 +37,6 @@ let processGroupMessage = function (message) {
 	});
 };
 
-let isIncomingGroupMessage = function (message) {
-	let isDirectionIn = (message && message.message && message.message.direction == 'in');
-	debug('Message is direction "in": %s', isDirectionIn);
-	return isDirectionIn;
-};
-
-let hasCommand = function (message) {
-	return message.text.toLowerCase().startsWith('@gif');
-};
-
-let searchGifResponse = function (gifs) {
-	if (!gifs.data) {
-		throw new Error('No data in gif response');
-	}
-	let gifUrl = '';
-	gifSearch:
-	for (let i = 0; i < gifs.data.length; i++) {
-		let gif = gifs.data[i]
-		for (key in gif.images) {
-			let pict = gif.images[key];
-			debug('Gif Size: %s', pict.size);
-			if (pict.size < maxGifSize) {
-				gifUrl = pict.url;
-				debug('Found Gif!: ', gifUrl)
-				break gifSearch;
-			}
-		}
-	}
-	debug('Gif Url: %s', gifUrl);
-	return gifUrl;
-}
-
-let buildMessage = function (message, gifUrl) {
-	let text = '';
-	let outMessage = {
-		from: message.to
-	}
-	if (gifUrl === '') {
-		text = 'No Gif Found';
-	}
-	else {
-		outMessage.media = [gifUrl]
-	}
-	outMessage.text = text;
-	let toNumbers = message.message.to;
-	let index = toNumbers.indexOf(message.to);
-	if (index > -1 ) {
-		toNumbers.splice(index, 1);
-	}
-	toNumbers.push(message.message.from);
-	outMessage.to = toNumbers;
-	debug(outMessage);
-	return outMessage;
-}
-
-let findGif = function (message) {
-	let phrase = message.text.replace('@gif', '');
-	return giphy.search(phrase);
-};
-
-let app = express();
-app.use(bodyParser.json());
-
 app.post('/message', (req, res) => {
 	res.sendStatus(200);
 	debug('Incoming Request: \n')
@@ -130,8 +67,45 @@ app.post('/message', (req, res) => {
 	}
 });
 
-const port = process.env.PORT || 3000;
 
-app.listen(port, process.env.HOST || "0.0.0.0");
-console.log("Gif bot running on port: ", port);
+function startServer() {
+	debug('Starting Server');
+	app.use(bodyParser.json());
+	app.use('/callback/', require('./routes.js'));
 
+	/// catch 404 and forward to error handler
+	app.use(function (req, res, next) {
+		var err = new Error('not found');
+		err.status = 404;
+		next(err);
+	});
+
+	// production error handler, no stacktraces leaked to user
+	app.use(function (err, req, res, next) {
+		logger.error(sprintf(
+			'error status=%s message=%s',
+			err.status, err.message
+		));
+		logger.error(err.stack);
+		res.status(err.status || 500);
+
+		if (typeof(err.status) === 'undefined') {
+			res.send({
+				status: 'error',
+				error: 'service error'
+			});
+		} else {
+			res.send({
+				status: 'error',
+				error: err.message
+			});
+		}
+	});
+
+	const port = process.env.PORT || 3000;
+	app.listen(port, process.env.HOST || "0.0.0.0", function () {
+		console.log('Group Messaging Bot listening on port ' + config.server.port);
+	});
+}
+
+startServer()
