@@ -11,6 +11,14 @@ module.exports.handleGifCommand = function (message) {
 				to: message.numbers.to,
 				from: message.numbers.from
 			}
+		})
+		.catch(function (error) {
+			debug(error);
+			return {
+				text: 'Can\'t find gif for: ' + message.command.query,
+				to: message.numbers.to,
+				from: message.numbers.from
+			};
 		});
 };
 
