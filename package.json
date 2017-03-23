@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Add a giphy bot to a group message thread",
   "main": "index.js",
-  "start": "node index.js",
   "scripts": {
-    "test": "'echo no test'"
+    "test": "'echo no test'",
+    "start":"node index.js"
   },
   "keywords": [
     "bandwidth",
