@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Add a giphy bot to a group message thread",
   "main": "index.js",
+  "start": "node index.js",
   "scripts": {
     "test": "'echo no test'"
   },
@@ -20,9 +21,13 @@
   "author": "Dan Tolbert",
   "license": "MIT",
   "dependencies": {
+    "@google/maps": "^0.3.1",
+    "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
+    "dark-sky": "^1.0.10",
     "debug": "^2.6.1",
     "express": "^4.15.2",
-    "giphy-api": "^1.2.5"
+    "giphy-api": "^1.2.5",
+    "node-bandwidth": "dtolb/node-bandwidth#v2_messaging"
   }
 }
