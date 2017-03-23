@@ -1,4 +1,6 @@
-const commands = require('commands.js');
+const commands = require('./commands.js');
+const debug = require('debug')('giphy_sms');
+const bandwidth = require('./bandwidth');
 
 const buildToArray = function (message) {
 	let numbers = {
@@ -21,22 +23,27 @@ const isCommandValid = function (command) {
 
 const messageReadyForProcessing = function (message) {
 	let isIncomingMessage = (message && message.message && message.message.direction == 'in');
-	debug('Message is direction "in": %s', isDirectionIn);
+	debug('Message is direction "in": %s', isIncomingMessage);
 	if (isIncomingMessage) {
-		return message.text.toLowerCase().startsWith('@');
+		debug(message);
+		return message.message.text.toLowerCase().startsWith('@');
+	}
+	else {
+		return false;
 	}
 };
 
 const extractCommand = function (message) {
-	let text = message.text.toLowerCase().substr(1);
+	let text = message.message.text.toLowerCase().substr(1);
 	let command = text.split(' ')[0];
 	let query = text.replace(command, '').trim();
 	return { command: command, query: query};
 };
 
-const messageHandler = function (message) {}
 module.exports.checkIfBodyIsArray = function (req, res, next) {
+	debug('Checking if body is array ')
 	if(Array.isArray(req.body)){
+		debug('Req body is array');
 		next();
 	}
 	else {
@@ -47,13 +54,15 @@ module.exports.checkIfBodyIsArray = function (req, res, next) {
 };
 
 module.exports.handleMessages = function (req, res, next) {
-	req.outMessage = [];
+	req.outMessages = [];
 	message = req.body[0];
 	debug('Handling message');
 	if (messageReadyForProcessing(message)) {
 		message.numbers = buildToArray(message);
 		message.command = extractCommand(message);
-		if (isCommandValid(command.command)) {
+		const command = message.command.command
+		if (isCommandValid(command)) {
+			debug(message);
 			commands[command](message)
 			.then(function (outMessage) {
 				req.outMessages.push(outMessage);
@@ -62,8 +71,8 @@ module.exports.handleMessages = function (req, res, next) {
 				debug(error);
 				req.outMessages.push(commands.error(message));
 			})
-			.finally(function () {
-				next()
+			.then(function () {
+				next();
 			});
 		}
 		else {
@@ -71,7 +80,16 @@ module.exports.handleMessages = function (req, res, next) {
 			next();
 		}
 	}
+	else {
+		var e = 'Message contents not valid';
+		debug(e);
+	}
 };
 
-module.exports.sendMessages = function (req, res, next) {};
+module.exports.sendMessages = function (req, res, next) {
+	bandwidth.sendGroup(req.outMessages[0])
+	.then(function (body) {
+		debug(body);
+	});
+};
 

@@ -1,4 +1,5 @@
-const gif = require('gif.js');
+const gif = require('./gif.js');
+const weather = require('./weather.js');
 
 const noCommand = function (message) {
 	return {
@@ -18,6 +19,7 @@ const commandError = function (message) {
 
 module.exports = {
 	gif: gif.handleGifCommand,
+	weather: weather.handleWeatherCommand,
 	error: commandError,
 	default: noCommand
 }

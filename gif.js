@@ -1,11 +1,12 @@
 let giphy = require('giphy-api')();
+const debug = require('debug')('giphy_sms');
+const maxGifSize = 1500000;
 
 module.exports.handleGifCommand = function (message) {
 	return giphy.search(message.command.query)
 		.then(searchGifResponse)
 		.then(function (gifUrl) {
 			return {
-				text: ' ',
 				media: [gifUrl],
 				to: message.numbers.to,
 				from: message.numbers.from

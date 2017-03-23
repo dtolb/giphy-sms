@@ -14,4 +14,4 @@ const api = new Bandwidth({
   apiSecret : apiSecret
 });
 
-module.exports.sendMessage()
+module.exports = api.Message;
