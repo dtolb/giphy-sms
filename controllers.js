@@ -1,6 +1,7 @@
 const commands = require('./commands.js');
 const debug = require('debug')('giphy_sms');
 const bandwidth = require('./bandwidth');
+const transferToNumber = '+18446550429'
 
 const buildToArray = function (message) {
 	let numbers = {
@@ -23,7 +24,7 @@ const isCommandValid = function (command) {
 
 const messageReadyForProcessing = function (message) {
 	let isIncomingMessage = (message && message.message && message.message.direction == 'in');
-	debug('Message is direction "in": %s', isIncomingMessage);
+	debug('Message is direction \'in\': %s', isIncomingMessage);
 	if (isIncomingMessage) {
 		debug(message);
 		return message.message.text.toLowerCase().startsWith('@');
@@ -39,6 +40,11 @@ const extractCommand = function (message) {
 	let query = text.replace(command, '').trim();
 	return { command: command, query: query};
 };
+
+const speakFailureToCall = function (callId) {
+	const sentence = 'Sorry, Bandwidth is not available right now. Please try again later';
+	return bandwidth.Call.speakSentence(callId, sentence);
+}
 
 module.exports.checkIfBodyIsArray = function (req, res, next) {
 	debug('Checking if body is array ')
@@ -62,12 +68,13 @@ module.exports.handleMessages = function (req, res, next) {
 		message.command = extractCommand(message);
 		const command = message.command.command
 		if (isCommandValid(command)) {
-			debug(message);
 			commands[command](message)
 			.then(function (outMessage) {
+				debug(outMessage);
 				req.outMessages.push(outMessage);
 			})
 			.catch(function (error) {
+				debug('Error generating message');
 				debug(error);
 				req.outMessages.push(commands.error(message));
 			})
@@ -76,6 +83,7 @@ module.exports.handleMessages = function (req, res, next) {
 			});
 		}
 		else {
+			debug('No command found');
 			req.outMessages.push(commands.default(message));
 			next();
 		}
@@ -87,9 +95,69 @@ module.exports.handleMessages = function (req, res, next) {
 };
 
 module.exports.sendMessages = function (req, res, next) {
-	bandwidth.sendGroup(req.outMessages[0])
+	bandwidth.Message.sendGroup(req.outMessages[0])
 	.then(function (body) {
 		debug(body);
+	})
+	.catch(function (err) {
+		debug('Error sending message');
+		next(err);
 	});
 };
+
+module.exports.sendAccepted = function (req, res, next) {
+	res.sendStatus(201);
+	next();
+}
+
+module.exports.checkCallEventType = function (req, res, next) {
+	let eventType = '';
+	try {
+		debug('Incoming call from: ' + req.body.from);
+		debug('Incoming call Id: ' + req.body.callId);
+		eventType = req.body.eventType;
+		if (eventType === 'answer'){
+			next();
+		}
+		else {
+			var e = 'Not answer event';
+			next(e);
+		}
+	}
+	catch (e) {
+		debug(e);
+		next(e);
+	}
+}
+
+module.exports.transferCallToSales = function (req, res, next) {
+	const transferPayLoad = {
+		transferTo       : transferToNumber,
+		whisperAudio     : {
+			sentence : 'Incoming call from group m m s page!',
+			gender   : 'female',
+			voice    : 'Kate',
+			locale   : 'en'
+		}
+	};
+	bandwidth.Call.transfer(req.body.callId, transferPayLoad)
+	.then(function (call) {
+		debug('Created call with id: ' + call.id);
+		req.outboundCallId = call.id;
+		//next();
+	})
+	.catch(function (err) {
+		debug('Error creating call');
+		debug(err);
+		return speakFailureToCall(req.body.callId)
+		.then(function () {
+			next(err);
+		})
+		.catch(function (err) {
+			debug('Error speaking to call');
+			next(err);
+		});
+	});
+
+}
 

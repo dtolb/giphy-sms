@@ -22,11 +22,6 @@ module.exports.handleGifCommand = function (message) {
 		});
 };
 
-const findGif = function (message) {
-	let phrase = message.text.replace('@gif', '');
-	return giphy.search(phrase);
-};
-
 const searchGifResponse = function (gifs) {
 	if (!gifs.data) {
 		throw new Error('No data in gif response');

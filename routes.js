@@ -4,13 +4,15 @@ const controllers = require('./controllers.js');
 
 router.route('/message')
 	.post(
-		function (req, res, next) {
-			res.send(201);
-			next();
-		},
+		controllers.sendAccepted,
 		controllers.checkIfBodyIsArray,
 		controllers.handleMessages,
 		controllers.sendMessages
 		);
 
 router.route('/calls')
+	.post(
+		controllers.sendAccepted,
+		controllers.checkCallEventType,
+		controllers.transferCallToSales
+		);
