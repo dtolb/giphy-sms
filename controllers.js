@@ -61,7 +61,7 @@ module.exports.checkIfBodyIsArray = function (req, res, next) {
 
 module.exports.handleMessages = function (req, res, next) {
 	req.outMessages = [];
-	message = req.body[0];
+	let message = req.body[0];
 	debug('Handling message');
 	if (messageReadyForProcessing(message)) {
 		message.numbers = buildToArray(message);

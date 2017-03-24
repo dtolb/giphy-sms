@@ -7,7 +7,6 @@ debug('booting %s', name);
 const express = require('express');
 let app = express();
 
-
 function startServer() {
 	debug('Starting Server');
 	app.use(bodyParser.json());

@@ -1,11 +1,13 @@
 const express = require('express');
 let router = module.exports = express.Router();
 const controllers = require('./controllers.js');
+const optOut = require('./optOut.js');
 
 router.route('/message')
 	.post(
 		controllers.sendAccepted,
 		controllers.checkIfBodyIsArray,
+		outOpt.checkForOptOut,
 		controllers.handleMessages,
 		controllers.sendMessages
 		);

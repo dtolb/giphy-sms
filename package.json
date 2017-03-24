@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "'echo no test'",
-    "start":"node index.js"
+    "start": "node index.js"
   },
   "keywords": [
     "bandwidth",
@@ -24,10 +24,12 @@
     "@google/maps": "^0.3.1",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
+    "cat-facts": "^1.0.2",
     "dark-sky": "^1.0.10",
     "debug": "^2.6.1",
     "express": "^4.15.2",
     "giphy-api": "^1.2.5",
+    "mongoose": "^4.9.1",
     "node-bandwidth": "dtolb/node-bandwidth#v2_messaging"
   }
 }
