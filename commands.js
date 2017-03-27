@@ -1,6 +1,7 @@
 const gif = require('./gif.js');
 const weather = require('./weather.js');
 const bandi = require('./bandi.js');
+const catfact = require('./catfact.js');
 const Promise = require('bluebird');
 
 const noCommand = function (message) {
@@ -24,5 +25,6 @@ module.exports = {
 	weather: weather.handleWeatherCommand,
 	error: commandError,
 	default: noCommand,
-	bandi: bandi.handleBandiCommand
+	bandi: bandi.handleBandiCommand,
+	catfact: catfact.handleCatFactCommand
 }

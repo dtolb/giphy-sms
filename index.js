@@ -7,7 +7,6 @@ debug('booting %s', name);
 const express = require('express');
 let app = express();
 
-
 function startServer() {
 	debug('Starting Server');
 	app.use(bodyParser.json());
@@ -19,7 +18,7 @@ function startServer() {
 		debug(req.url)
 		var err = new Error('not found');
 		err.status = 404;
-		res.send(404, 'Not Found')
+		res.sendStatus(404, 'Not Found')
 	});
 
 	// production error handler, no stacktraces leaked to user

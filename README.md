@@ -29,6 +29,7 @@ Anything else is ignored and your chat continues as normal
 * `BANDWIDTH_API_SECRET`
 * `DARKSKY_KEY`
 * `GOOGLE_KEY`
+* `DATABASE_URL`
 
 ### Run
 `npm install`
