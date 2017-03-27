@@ -1,7 +1,8 @@
 const debug = require('debug')('giphy_sms');
 const mongoose = require('mongoose');
-const import findOrCreate from 'findorcreate-promise';
+const findOrCreate = require('findorcreate-promise');
 const Promise = require('bluebird');
+const _ = require('underscore');
 
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost/giphy-sms');
@@ -21,10 +22,7 @@ const phrases = [
 ];
 
 const addNumberToOptOut = function (number) {
-	// let numberToAdd = new Number({
-	// 	number: number,
-	// 	disable: true
-	// });
+	debug('Adding number to optout list: ' + number);
 	return Number.findOrCreate({
 		number: number
 	});
@@ -39,29 +37,45 @@ const searchForNumber = function (number) {
 
 module.exports.removeOptOutsFromMessage = function (req, res, next) {
 	const outNumbers = req.outMessages[0].to;
-	outNumbers.map()
+	debug('Searching for optouts: ' + outNumbers);
 	return Promise.map(outNumbers, function (number) {
-		return Number.find({ number: number });
+		return Number.find({ number: number })
 		.then(function (doc) {
-			return doc.number;
+			if (doc.length > 0) {
+				debug('Found number in optout: ' + doc[0].number);
+				return doc[0].number;
+			}
+			else {
+				debug('Number not in opt out list: ' + number);
+			}
 		})
 	})
 	.then(function (results) {
-		return outNumbers.filter(function (el) {
-			return results.indexOf(el) < 0;
-		});
+		debug('Numbers that opted out: ' + results);
+		req.outMessages[0].to = _.difference(outNumbers,results);
+		next();
 	})
 	.catch(function (err) {
 		debug('Error removing components from to array');
 		next(err);
 	})
-})
+};
 
 module.exports.checkForOptOut = function (req, res, next) {
 	let message = req.body[0];
 	let number = message.message.from;
-	let text = message.message.text.toLowerCase();
-	if (phrases.indexOf(text) < 0) {
+	let text = ''
+	try {
+		text = message.message.text.toLowerCase();
+	}
+	catch (e) {
+		debug('No text in message')
+		next();
+		return;
+	}
+	debug('Incoming text: ' + text);
+	if (phrases.indexOf(text) >= 0) {
+		debug('Stop Command Found');
 		addNumberToOptOut(number)
 		.then(function (doc) {
 			if (doc.created) {
@@ -75,5 +89,9 @@ module.exports.checkForOptOut = function (req, res, next) {
 		.catch(function (err) {
 			debug('Error finding or creating number to block list: ' + number);
 		})
+	}
+	else {
+		debug('Not a stop command');
+		next();
 	}
 };

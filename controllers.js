@@ -95,14 +95,19 @@ module.exports.handleMessages = function (req, res, next) {
 };
 
 module.exports.sendMessages = function (req, res, next) {
-	bandwidth.Message.sendGroup(req.outMessages[0])
-	.then(function (body) {
-		debug(body);
-	})
-	.catch(function (err) {
-		debug('Error sending message');
-		next(err);
-	});
+	if(req.outMessages[0].to.length >= 1) {
+		bandwidth.Message.sendGroup(req.outMessages[0])
+		.then(function (body) {
+			debug(body);
+		})
+		.catch(function (err) {
+			debug('Error sending message');
+			next(err);
+		});
+	}
+	else {
+		debug('No valid phone numbers to send to');
+	}
 };
 
 module.exports.sendAccepted = function (req, res, next) {

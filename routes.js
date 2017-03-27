@@ -7,8 +7,9 @@ router.route('/message')
 	.post(
 		controllers.sendAccepted,
 		controllers.checkIfBodyIsArray,
-		outOpt.checkForOptOut,
+		optOut.checkForOptOut,
 		controllers.handleMessages,
+		optOut.removeOptOutsFromMessage,
 		controllers.sendMessages
 		);
 

@@ -30,6 +30,7 @@
     "express": "^4.15.2",
     "giphy-api": "^1.2.5",
     "mongoose": "^4.9.1",
-    "node-bandwidth": "dtolb/node-bandwidth#v2_messaging"
+    "node-bandwidth": "dtolb/node-bandwidth#v2_messaging",
+    "underscore": "^1.8.3"
   }
 }
